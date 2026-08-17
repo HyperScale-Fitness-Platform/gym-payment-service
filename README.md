@@ -59,14 +59,14 @@ Create the required extension and table:
 docker exec -it gym-payment-postgres psql -U postgres -d gym_payment -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";'
 
 docker exec -it gym-payment-postgres psql -U postgres -d gym_payment -c '
-CREATE TABLE IF NOT EXISTS payments (
+CREATE TABLE payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL,
   reference_type VARCHAR(50) NOT NULL,
-  reference_id VARCHAR(255) NOT NULL,
+  reference_id TEXT NOT NULL,           
   amount_cents INTEGER NOT NULL,
-  currency VARCHAR(3) NOT NULL DEFAULT "usd",
-  status VARCHAR(20) NOT NULL DEFAULT "pending",
+  currency VARCHAR(3) NOT NULL DEFAULT 'usd',      
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',     
   provider_payment_id VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT now(),
   updated_at TIMESTAMP NOT NULL DEFAULT now()
