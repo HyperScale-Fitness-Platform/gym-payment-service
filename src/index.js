@@ -8,6 +8,7 @@ const webhookRoutes = require("./routes/webhook.routes");
 
 const { attachUserFromHeaders } = require("./middleware/auth.middleware");
 const { errorHandler } = require("./middleware/errorHandler.middleware");
+const { producer } = require("./config/kafka");
 
 const app = express();
 
@@ -34,6 +35,20 @@ app.use("/payments", paymentRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4006;
-app.listen(PORT, () => {
-  console.log(`payment-service listening on port ${PORT}`);
-});
+
+producer.connect()
+  .then(() => {
+    console.log("payment-service Kafka producer connected");
+
+    app.listen(PORT, () => {
+      console.log(`payment-service listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Kafka producer connection failed:", err);
+    // Start the server anyway so health checks work,
+    // but Kafka publishing will fail until reconnected.
+    app.listen(PORT, () => {
+      console.log(`payment-service listening on port ${PORT} (Kafka unavailable)`);
+    });
+  });

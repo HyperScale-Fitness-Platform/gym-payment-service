@@ -29,6 +29,30 @@ async function getPayment(req, res, next) {
   }
 }
 
+async function resumePayment(req, res, next) {
+  try {
+    const result = await paymentService.continuePayment(
+      req.user.id,
+      req.params.id,
+    );
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deletePayment(req, res, next) {
+  try {
+    const result = await paymentService.deletePayment(
+      req.user.id,
+      req.params.id,
+    );
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getMyPayments(req, res, next) {
   try {
     const userId = req.user.id;
@@ -42,4 +66,4 @@ async function getMyPayments(req, res, next) {
   }
 }
 
-module.exports = { initiatePayment, getPayment, getMyPayments };
+module.exports = { initiatePayment, getPayment, resumePayment, deletePayment, getMyPayments };

@@ -48,4 +48,12 @@ async function findByUserId(userId, limit, offset) {
   return result.rows;
 }
 
-module.exports = { create, findById, findByReference, updateStatus, findByUserId };
+async function remove(id) {
+  const result = await pool.query(
+    "DELETE FROM payments WHERE id = $1 RETURNING id",
+    [id]
+  );
+  return result.rows[0] || null;
+}
+
+module.exports = { create, findById, findByReference, updateStatus, findByUserId, remove };

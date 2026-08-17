@@ -38,6 +38,30 @@ async function createPaymentIntent({ amountCents, currency, metadata }) {
   };
 }
 
+async function retrievePaymentIntent(providerPaymentId) {
+  // Fetches an existing PaymentIntent from Stripe. This is what lets a
+  // customer RESUME a checkout they abandoned: Stripe keeps the same
+  // PaymentIntent (and its client_secret) alive until it's confirmed,
+  // so we can hand the frontend the same secret again.
+  const intent = await stripe.paymentIntents.retrieve(
+    providerPaymentId
+  );
+
+  return {
+    providerPaymentId: intent.id,
+    clientSecret: intent.client_secret,
+    status: intent.status,
+  };
+}
+
+async function cancelPaymentIntent(providerPaymentId) {
+  // Best-effort cancel of an abandoned PaymentIntent. Stripe throws if
+  // the intent is already canceled or no longer cancellable, so callers
+  // wrap this in a try/catch — cancelling is a cleanup nicety, not a
+  // hard requirement for deleting our own payment record.
+  return stripe.paymentIntents.cancel(providerPaymentId);
+}
+
 function constructWebhookEvent(rawBody, signature) {
   // Stripe signs every webhook request with your webhook secret so you
   // can verify it genuinely came from Stripe, not an attacker pretending
@@ -49,4 +73,4 @@ function constructWebhookEvent(rawBody, signature) {
   );
 }
 
-module.exports = { createPaymentIntent, constructWebhookEvent };
+module.exports = { createPaymentIntent, retrievePaymentIntent, cancelPaymentIntent, constructWebhookEvent };
